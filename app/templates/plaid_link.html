@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="layout" style="grid-template-columns: 1fr;">
+  <main class="main">
+    <header class="header">
+      <h1>Link a bank account</h1>
+      <a href="/" class="btn-link">Back to dashboard</a>
+    </header>
+    <section class="panel">
+      <p>This uses Plaid Link. In <code>sandbox</code> mode (the default) you don't need real bank
+      credentials - pick any institution and use username <code>user_good</code> / password
+      <code>pass_good</code> at the prompt.</p>
+      <button id="link-btn">Connect a bank</button>
+      <p id="status" class="muted"></p>
+    </section>
+  </main>
+</div>
+<script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+<script>
+  const statusEl = document.getElementById("status");
+  document.getElementById("link-btn").addEventListener("click", async () => {
+    statusEl.textContent = "Requesting link token...";
+    const res = await fetch("/plaid/link-token");
+    if (!res.ok) {
+      const err = await res.json();
+      statusEl.textContent = `Error: ${err.detail || res.statusText}`;
+      return;
+    }
+    const { link_token } = await res.json();
+    const handler = Plaid.create({
+      token: link_token,
+      onSuccess: async (public_token, metadata) => {
+        statusEl.textContent = "Linked - syncing transactions...";
+        const exchangeRes = await fetch("/plaid/exchange", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            public_token,
+            institution_name: metadata.institution ? metadata.institution.name : null,
+          }),
+        });
+        if (exchangeRes.ok) {
+          window.location.href = "/";
+        } else {
+          const err = await exchangeRes.json();
+          statusEl.textContent = `Error: ${err.detail || exchangeRes.statusText}`;
+        }
+      },
+      onExit: (err) => {
+        if (err) statusEl.textContent = `Exited: ${err.error_message || err.error_code}`;
+      },
+    });
+    handler.open();
+  });
+</script>
+{% endblock %}
