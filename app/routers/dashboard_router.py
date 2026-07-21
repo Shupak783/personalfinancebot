@@ -16,7 +16,6 @@ templates = Jinja2Templates(directory="app/templates")
 def dashboard(request: Request, db: Session = Depends(get_db)):
     now = datetime.datetime.now(datetime.timezone.utc)
     context = {
-        "request": request,
         "accounts": db.query(Account).all(),
         "total_cash_cents": total_cash_cents(db),
         "total_credit_owed_cents": total_credit_owed_cents(db),
@@ -26,4 +25,4 @@ def dashboard(request: Request, db: Session = Depends(get_db)):
         "nudges": db.query(Nudge).filter(Nudge.acknowledged.is_(False)).order_by(Nudge.created_at.desc()).all(),
         "month_label": now.strftime("%B %Y"),
     }
-    return templates.TemplateResponse("dashboard.html", context)
+    return templates.TemplateResponse(request, "dashboard.html", context)

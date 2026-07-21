@@ -1,0 +1,125 @@
+# Personal Finance Bot
+
+A self-hosted personal finance dashboard with a Claude-powered chat assistant. It tracks
+income/expenses, tracks budgets per category, and can pull real transactions from your bank
+via Plaid. The chat assistant answers spending questions ("can I afford a new golf driver?")
+using your *actual* balances and budget status - it won't just make numbers up.
+
+Everything runs locally on your own machine. Your data lives in a single `finbot.db` file
+next to the code; nothing is sent anywhere except to Anthropic (for chat) and Plaid (for bank
+sync), and only when you actively use those features.
+
+## 1. One-time setup
+
+You'll need Python 3.11+ installed. Then, from this project folder:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate      # on Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+cp .env.example .env
+```
+
+Now open `.env` in any text editor and fill in:
+
+- **`ANTHROPIC_API_KEY`** - get one at https://console.anthropic.com (needed for the chat
+  assistant; without it the dashboard still works, just no chat).
+- **`PLAID_CLIENT_ID`** / **`PLAID_SECRET`** - get free sandbox keys at
+  https://dashboard.plaid.com (needed only if you want bank sync; the app runs fine without
+  it, using manual entry instead).
+
+Leave `PLAID_ENV=sandbox` for now - that's Plaid's fake-bank testing mode, no real bank
+credentials involved. See "Going to a real bank" below for switching later.
+
+## 2. (Optional) Load some demo data
+
+If you want to see the dashboard with realistic numbers before connecting anything real:
+
+```bash
+python -m scripts.seed_demo_data
+```
+
+This creates a fake "Demo Checking" account with ~3 months of sample transactions and
+budgets. Delete `finbot.db` any time to start over with a clean slate.
+
+## 3. Run it
+
+```bash
+uvicorn app.main:app --reload
+```
+
+Then open http://127.0.0.1:8000 in your browser. That's the dashboard: balances, budget
+progress bars, recent transactions, and a chat panel on the right.
+
+## 4. Link a bank account (optional)
+
+Click "Link a bank account" on the dashboard. In sandbox mode, pick any institution and
+when prompted for credentials use:
+
+- username: `user_good`
+- password: `pass_good`
+
+This pulls in fake-but-realistic transactions and balances so you can test the real sync
+flow without using your actual bank login.
+
+## 5. Log spending manually (no bank needed)
+
+You don't need Plaid at all to use this day to day - just tell the chat assistant things
+like:
+
+> spent $85 at Costco
+> got paid $2200 today
+
+It logs them, auto-categorizes them, and they show up on the dashboard immediately.
+
+## 6. The "autonomous" check-in
+
+Run this on a schedule (daily or weekly) to have it sync your bank, check your budgets, and
+leave you an honest nudge (visible at the top of the dashboard next time you open it):
+
+```bash
+python -m scripts.daily_check_in
+```
+
+To automate it:
+
+- **macOS/Linux (cron)**: `crontab -e`, then add a line like
+  `0 8 * * * cd /path/to/personalfinancebot && .venv/bin/python -m scripts.daily_check_in`
+  to run it every morning at 8am.
+- **Windows**: use Task Scheduler to run
+  `C:\path\to\personalfinancebot\.venv\Scripts\python.exe -m scripts.daily_check_in` on a
+  daily trigger.
+
+Note this only runs while your computer is on and the schedule fires - it isn't a 24/7
+cloud service. If you want that later, the app would need to be deployed somewhere (a small
+server or a host like Railway/Fly.io) - happy to help with that when you're ready.
+
+## Going to a real bank (Plaid production)
+
+Plaid's sandbox (the default) uses fake data and works immediately. To connect a *real* bank
+account you'd need to apply for Plaid production access through their dashboard (their
+approval process, not something this app controls), then set `PLAID_ENV=production` in
+`.env` with your production keys. Don't do this until you're comfortable with how the app
+behaves in sandbox mode.
+
+## Running tests
+
+```bash
+pytest
+```
+
+## Project layout
+
+```
+app/
+  models.py          - database tables (accounts, transactions, categories, budgets, chat)
+  budgeting.py        - categorization rules + budget/net-worth math
+  plaid_client.py      - Plaid API wrapper
+  sync_service.py      - pulls Plaid transactions/balances into the local database
+  agent.py            - the Claude-powered chat assistant and its tools
+  routers/            - web API endpoints
+  templates/, static/  - the dashboard web page
+scripts/
+  seed_demo_data.py    - loads fake sample data
+  daily_check_in.py    - the scheduled autonomous check-in
+```

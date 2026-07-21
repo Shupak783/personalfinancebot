@@ -13,7 +13,7 @@ templates = Jinja2Templates(directory="app/templates")
 
 @router.get("/link")
 def link_page(request: Request):
-    return templates.TemplateResponse("plaid_link.html", {"request": request})
+    return templates.TemplateResponse(request, "plaid_link.html", {})
 
 
 class ExchangeIn(BaseModel):
