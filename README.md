@@ -94,6 +94,40 @@ Note this only runs while your computer is on and the schedule fires - it isn't 
 cloud service. If you want that later, the app would need to be deployed somewhere (a small
 server or a host like Railway/Fly.io) - happy to help with that when you're ready.
 
+## 7. Weekly email recap
+
+A once-a-week email summarizing your spending: total for the past 7 days, a bar chart
+ranking categories by spend (highest at top), and a breakdown table. Clicking any category
+on the dashboard itself also filters the transaction list down to just that category, so you
+can see what actually landed in e.g. "Uncategorized."
+
+This uses your own email account to send, via an **app password** rather than your real
+login password - a separate, revocable code your email provider generates specifically for
+letting a script send mail. For Gmail:
+
+1. Turn on 2-Step Verification if you haven't already (https://myaccount.google.com/security).
+2. Generate an app password at https://myaccount.google.com/apppasswords.
+3. In `.env`, set `EMAIL_USERNAME` to your Gmail address, `EMAIL_APP_PASSWORD` to the
+   generated code, and `EMAIL_TO` to whichever address you want the recap sent to (can be
+   the same address).
+
+Then send a recap on demand with:
+
+```bash
+python -m scripts.weekly_email_recap
+```
+
+To automate it weekly:
+
+- **macOS/Linux (cron)**: `crontab -e`, add
+  `0 18 * * 0 cd /path/to/personalfinancebot && .venv/bin/python -m scripts.weekly_email_recap`
+  to send it every Sunday at 6pm.
+- **Windows**: Task Scheduler, weekly trigger, same command as the daily check-in but
+  pointing at `scripts.weekly_email_recap`.
+
+If there's no spending in the last 7 days, it skips sending rather than emailing an empty
+recap.
+
 ## Market news panel
 
 The bottom-right panel on the dashboard shows a rotating carousel of real financial
@@ -133,9 +167,12 @@ app/
   sync_service.py      - pulls Plaid transactions/balances into the local database
   agent.py            - the Claude-powered chat assistant and its tools
   news.py             - market headline fetch/cache + isolated trend-overview summarizer
+  reports.py          - category spend aggregation + bar chart rendering
+  email_service.py     - sends HTML emails with inline images via SMTP/app password
   routers/            - web API endpoints
   templates/, static/  - the dashboard web page
 scripts/
   seed_demo_data.py    - loads fake sample data
   daily_check_in.py    - the scheduled autonomous check-in
+  weekly_email_recap.py - sends the weekly spending recap email
 ```

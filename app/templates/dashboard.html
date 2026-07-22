@@ -41,7 +41,7 @@
         {% if b.budget_cents %}
         <div class="budget-row">
           <div class="budget-label">
-            <span>{{ b.category }}</span>
+            <a href="/?category={{ b.category|urlencode }}" class="category-link">{{ b.category }}</a>
             <span>${{ '%.2f'|format(b.spent_cents/100) }} / ${{ '%.2f'|format(b.budget_cents/100) }}</span>
           </div>
           <div class="budget-bar">
@@ -57,6 +57,12 @@
 
     <section class="panel">
       <h2>Recent transactions</h2>
+      {% if filter_category %}
+      <div class="filter-banner">
+        Showing: <strong>{{ filter_category }}</strong> ({{ recent_transactions|length }} transactions)
+        &middot; <a href="/">Clear filter</a>
+      </div>
+      {% endif %}
       <table class="txn-table">
         <thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Amount</th></tr></thead>
         <tbody>
@@ -64,7 +70,13 @@
           <tr>
             <td>{{ t.date.strftime('%b %d') }}</td>
             <td>{{ t.merchant_name or t.description }}</td>
-            <td>{{ t.category.name if t.category else '-' }}</td>
+            <td>
+              {% if t.category %}
+              <a href="/?category={{ t.category.name|urlencode }}" class="category-link">{{ t.category.name }}</a>
+              {% else %}
+              -
+              {% endif %}
+            </td>
             <td class="{{ 'negative' if t.amount_cents > 0 else 'positive' }}">
               {{ '-' if t.amount_cents > 0 else '+' }}${{ '%.2f'|format((t.amount_cents|abs)/100) }}
             </td>

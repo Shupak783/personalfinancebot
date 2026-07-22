@@ -53,6 +53,12 @@ body {
 .panel h2 { margin-top: 0; font-size: 1.05rem; }
 .muted { color: var(--muted); }
 
+.category-link { color: var(--text); text-decoration: none; border-bottom: 1px dotted var(--muted); }
+.category-link:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+.filter-banner { background: #17253a; border: 1px solid #2c4870; color: var(--text); padding: 8px 12px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 12px; }
+.filter-banner a { color: var(--accent); }
+
 .budget-row { margin-bottom: 14px; }
 .budget-label { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 4px; }
 .budget-bar { background: #232734; border-radius: 6px; height: 8px; overflow: hidden; }

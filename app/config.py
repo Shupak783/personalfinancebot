@@ -16,6 +16,13 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./finbot.db"
     app_secret: str = "change-me"
 
+    email_smtp_host: str = "smtp.gmail.com"
+    email_smtp_port: int = 587
+    email_username: str = ""
+    email_app_password: str = ""
+    email_from: str = ""
+    email_to: str = ""
+
     @property
     def plaid_products_list(self) -> list[str]:
         return [p.strip() for p in self.plaid_products.split(",") if p.strip()]
