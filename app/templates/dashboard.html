@@ -77,14 +77,24 @@
     </section>
   </main>
 
-  <aside class="chat-panel">
-    <h2>Ask your finance agent</h2>
-    <div id="chat-log" class="chat-log"></div>
-    <form id="chat-form">
-      <input id="chat-input" type="text" placeholder="Can I afford a $350 golf driver?" autocomplete="off" />
-      <button type="submit">Send</button>
-    </form>
-  </aside>
+  <div class="right-column">
+    <aside class="chat-panel">
+      <h2>Ask your finance agent</h2>
+      <div id="chat-log" class="chat-log"></div>
+      <form id="chat-form">
+        <input id="chat-input" type="text" placeholder="Can I afford a $350 golf driver?" autocomplete="off" />
+        <button type="submit">Send</button>
+      </form>
+    </aside>
+
+    <aside class="news-panel">
+      <h2>Market news</h2>
+      <p id="news-trend-summary" class="news-trend-summary muted">Loading overview...</p>
+      <div id="news-carousel" class="news-carousel muted">Loading headlines...</div>
+      <p class="news-disclaimer">Overview is auto-generated from headlines below - trends only, never a suggestion to buy/sell/hold anything.</p>
+    </aside>
+  </div>
 </div>
 <script src="/static/chat.js"></script>
+<script src="/static/news.js"></script>
 {% endblock %}

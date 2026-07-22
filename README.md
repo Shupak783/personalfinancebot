@@ -94,6 +94,21 @@ Note this only runs while your computer is on and the schedule fires - it isn't 
 cloud service. If you want that later, the app would need to be deployed somewhere (a small
 server or a host like Railway/Fly.io) - happy to help with that when you're ready.
 
+## Market news panel
+
+The bottom-right panel on the dashboard shows a rotating carousel of real financial
+headlines (stocks/bonds/ETFs/markets), pulled from a fixed allowlist of established outlets
+(MarketWatch, CNBC Markets) - not user-editable feed URLs, so it can't be pointed at an
+arbitrary or untrusted source. Clicking a headline opens the original article on the
+source's own site in a new tab; the app never renders full article content itself.
+
+Above the carousel is a short "what's happening in the markets" overview, written by Claude
+from the headlines. That call is deliberately isolated: it has no access to your accounts,
+budgets, or any tool the chat assistant has, and its instructions explicitly forbid
+recommending that you buy, sell, or hold anything - it only describes trends. This only runs
+if `ANTHROPIC_API_KEY` is set; without it, the carousel still works, just without the
+overview blurb.
+
 ## Going to a real bank (Plaid production)
 
 Plaid's sandbox (the default) uses fake data and works immediately. To connect a *real* bank
@@ -117,6 +132,7 @@ app/
   plaid_client.py      - Plaid API wrapper
   sync_service.py      - pulls Plaid transactions/balances into the local database
   agent.py            - the Claude-powered chat assistant and its tools
+  news.py             - market headline fetch/cache + isolated trend-overview summarizer
   routers/            - web API endpoints
   templates/, static/  - the dashboard web page
 scripts/
