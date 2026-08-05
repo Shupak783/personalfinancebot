@@ -176,3 +176,10 @@ scripts/
   daily_check_in.py    - the scheduled autonomous check-in
   weekly_email_recap.py - sends the weekly spending recap email
 ```
+
+## Security
+
+See [SECURITY.md](./SECURITY.md) for the actual security/access/data-retention practices
+this project follows - written honestly for what this is (a single-user local app), not
+padded with enterprise controls that don't apply. Includes how to run a dependency
+vulnerability scan with `pip-audit`.
