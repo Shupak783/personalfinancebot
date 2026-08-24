@@ -43,6 +43,16 @@ body {
 .nudges { margin-bottom: 16px; }
 .nudge { background: #2a2110; border: 1px solid #6b4f16; color: #f3c969; padding: 10px 14px; border-radius: 8px; margin-bottom: 8px; }
 
+.account-list { display: flex; flex-direction: column; gap: 2px; }
+.account-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 6px; border-bottom: 1px solid var(--border); }
+.account-row:last-child { border-bottom: none; }
+.account-info { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.account-name { font-weight: 500; }
+.account-mask, .account-type { color: var(--muted); font-size: 0.8rem; }
+.account-type { text-transform: capitalize; }
+.account-balance { font-weight: 600; }
+.account-balance.negative { color: var(--bad); }
+
 .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
 .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
 .card-label { color: var(--muted); font-size: 0.85rem; margin-bottom: 6px; }
@@ -52,6 +62,7 @@ body {
 .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 18px; margin-bottom: 24px; }
 .panel h2 { margin-top: 0; font-size: 1.05rem; }
 .muted { color: var(--muted); }
+.muted.small { font-size: 0.8rem; margin-top: -4px; }
 
 .category-link { color: var(--text); text-decoration: none; border-bottom: 1px dotted var(--muted); }
 .category-link:hover { color: var(--accent); border-bottom-color: var(--accent); }

@@ -18,6 +18,23 @@ def test_suggest_category_matches_known_keywords():
     assert suggest_category("Golf Galaxy - grips", None) == "Golf/Hobbies"
 
 
+def test_suggest_category_matches_user_specified_merchants():
+    assert suggest_category("FRESH THYME MARKET #123", None) == "Groceries"
+    assert suggest_category("HAMLIN PUB 5", None) == "Dining"
+    assert suggest_category("RECURRING PMT - SOME SERVICE", None) == "Subscriptions"
+    assert suggest_category("PLANET FITNESS MEMBERSHIP", None) == "Subscriptions"
+    assert suggest_category("AMAZON PRIME MEMBERSHIP", None) == "Subscriptions"
+
+
+def test_suggest_category_gc_matches_golf_course_as_whole_word():
+    assert suggest_category("STONEY CREEK GC", None) == "Golf/Hobbies"
+
+
+def test_suggest_category_gc_does_not_false_positive_inside_words():
+    # 'gc' appears as a substring of 'magcargo' but should not trigger Golf/Hobbies
+    assert suggest_category("MAGCARGO CORP", None) != "Golf/Hobbies"
+
+
 def test_suggest_category_falls_back_to_uncategorized():
     assert suggest_category("Some Totally Unknown Merchant", None) == "Uncategorized"
 

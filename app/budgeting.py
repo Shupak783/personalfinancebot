@@ -1,4 +1,5 @@
 import datetime
+import re
 from collections import defaultdict
 
 from sqlalchemy import extract
@@ -9,10 +10,18 @@ from app.models import Account, Category, Transaction
 # Keyword -> category name, checked against merchant_name/description (case-insensitive).
 # First match wins. Falls back to "Uncategorized".
 CATEGORY_RULES: list[tuple[str, list[str]]] = [
-    ("Groceries", ["grocery", "safeway", "kroger", "trader joe", "whole foods", "costco"]),
-    ("Dining", ["restaurant", "starbucks", "coffee", "doordash", "uber eats", "grubhub", "chipotle"]),
-    ("Transport", ["uber", "lyft", "shell", "chevron", "exxon", "gas station", "parking"]),
-    ("Subscriptions", ["netflix", "spotify", "hulu", "disney+", "prime video", "apple.com/bill"]),
+    ("Groceries", ["grocery", "safeway", "kroger", "trader joe", "whole foods", "costco", "fresh thyme", "meijer", "aldi", "publix"]),
+    ("Dining", ["restaurant", "starbucks", "coffee", "doordash", "uber eats", "grubhub", "chipotle", "hamlin pub", "mcdonald", "wendy's", "taco bell", "tavern", "brewing co"]),
+    ("Transport", ["uber", "lyft", "shell", "chevron", "exxon", "gas station", "parking", "marathon"]),
+    (
+        "Subscriptions",
+        [
+            "netflix", "spotify", "hulu", "disney+", "prime video", "apple.com/bill", "recurring",
+            "subscription", "membership", "youtube premium", "icloud", "google one", "playstation",
+            "xbox", "audible", "peloton", "planet fitness", "la fitness", "anytime fitness",
+            "crunch fitness", "24 hour fitness", "amazon prime", "hbo max", "paramount+", "patreon",
+        ],
+    ),
     ("Shopping", ["amazon", "target", "walmart", "best buy"]),
     ("Golf/Hobbies", ["golf", "pro shop", "dick's sporting", "callaway", "titleist"]),
     ("Utilities", ["electric", "water bill", "comcast", "internet", "pg&e", "utility"]),
@@ -20,15 +29,31 @@ CATEGORY_RULES: list[tuple[str, list[str]]] = [
     ("Income", ["payroll", "direct deposit", "salary"]),
 ]
 
+# Keywords too short/generic for safe substring matching (e.g. "gc" for golf course) -
+# matched as a whole word only so they don't false-positive inside unrelated text.
+WHOLE_WORD_KEYWORDS: dict[str, list[str]] = {
+    "Golf/Hobbies": ["gc"],
+}
+
 DEFAULT_CATEGORIES = [name for name, _ in CATEGORY_RULES] + ["Uncategorized"]
+
+
+def _matches_category(haystack: str, category_name: str, keywords: list[str]) -> bool:
+    if any(kw in haystack for kw in keywords):
+        return True
+    return any(
+        re.search(rf"\b{re.escape(whole_word)}\b", haystack)
+        for whole_word in WHOLE_WORD_KEYWORDS.get(category_name, [])
+    )
 
 
 def suggest_category(description: str, merchant_name: str | None) -> str:
     haystack = f"{description} {merchant_name or ''}".lower()
     for category_name, keywords in CATEGORY_RULES:
-        if any(kw in haystack for kw in keywords):
+        if _matches_category(haystack, category_name, keywords):
             return category_name
     return "Uncategorized"
+
 
 
 def get_or_create_category(db: Session, name: str, is_income: bool = False) -> Category:

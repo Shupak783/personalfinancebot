@@ -36,6 +36,51 @@
     </section>
 
     <section class="panel">
+      <h2>Accounts</h2>
+      {% if accounts %}
+      <div class="account-list">
+        {% for a in accounts %}
+        <div class="account-row">
+          <div class="account-info">
+            <span class="account-name">{{ a.name }}</span>
+            {% if a.mask %}<span class="account-mask">&bull;&bull;&bull;&bull; {{ a.mask }}</span>{% endif %}
+            <span class="account-type">{{ a.subtype or a.type }}</span>
+          </div>
+          <div class="account-balance {{ 'negative' if a.type == 'credit' else '' }}">
+            ${{ '%.2f'|format(a.current_balance_cents/100) }}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="muted">No accounts yet. Link a bank or log a manual transaction to get started.</p>
+      {% endif %}
+    </section>
+
+    <section class="panel">
+      <h2>Detected recurring charges</h2>
+      <p class="muted small">Merchants billed in at least 2 of the last 3 months at a similar amount - a good way to spot subscriptions you forgot about, regardless of category.</p>
+      {% if recurring_bills %}
+      <div class="account-list">
+        {% for r in recurring_bills %}
+        <div class="account-row">
+          <div class="account-info">
+            <span class="account-name">{{ r.merchant }}</span>
+            <span class="account-type">seen {{ r.occurrences }}x recently</span>
+          </div>
+          <div class="account-balance">
+            ${{ '%.2f'|format(r.avg_amount_cents/100) }}/mo
+            <span class="account-mask">(~${{ '%.0f'|format(r.avg_amount_cents*12/100) }}/yr)</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="muted">No recurring charges detected yet.</p>
+      {% endif %}
+    </section>
+
+    <section class="panel">
       <h2>Budgets - {{ month_label }}</h2>
       {% for b in budgets %}
         {% if b.budget_cents %}

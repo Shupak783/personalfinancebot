@@ -4,7 +4,13 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
-from app.budgeting import budget_status, net_cash_position_cents, total_cash_cents, total_credit_owed_cents
+from app.budgeting import (
+    budget_status,
+    detect_recurring_bills,
+    net_cash_position_cents,
+    total_cash_cents,
+    total_credit_owed_cents,
+)
 from app.db import get_db
 from app.models import Account, Category, Nudge, Transaction
 
@@ -33,5 +39,6 @@ def dashboard(request: Request, category: str | None = None, db: Session = Depen
         "filter_category": category,
         "nudges": db.query(Nudge).filter(Nudge.acknowledged.is_(False)).order_by(Nudge.created_at.desc()).all(),
         "month_label": now.strftime("%B %Y"),
+        "recurring_bills": detect_recurring_bills(db),
     }
     return templates.TemplateResponse(request, "dashboard.html", context)
